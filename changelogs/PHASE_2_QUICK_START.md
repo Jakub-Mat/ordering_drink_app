@@ -1,4 +1,4 @@
-# Phase 2 Frontend - Quick Start Guide
+# Phase_2 Quick Start Guide
 
 ## ✅ What's Been Built
 

@@ -3,7 +3,7 @@
  */
 import OrderCard from './OrderCard';
 
-export default function OrdersList({ orders, drinks, onStatusChange, isBarman = false, highlightOrderId = null }) {
+export default function OrdersList({ orders, drinks, onStatusChange, onDeleteOrder, isBarman = false, highlightOrderId = null }) {
   if (orders.length === 0) {
     return (
       <div className="text-center py-8">
@@ -31,6 +31,7 @@ export default function OrdersList({ orders, drinks, onStatusChange, isBarman = 
           order={order}
           drinks={drinks}
           onStatusChange={onStatusChange}
+          onDeleteOrder={onDeleteOrder}
           isBarman={isBarman}
         />
       ))}

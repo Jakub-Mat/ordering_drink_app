@@ -1,13 +1,13 @@
 /**
  * Individual order card component for displaying order status
  */
-export default function OrderCard({ order, drinks, onStatusChange, isBarman = false }) {
+export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder, isBarman = false }) {
   // Map drink IDs to drink names
   const getDrinkNames = () => {
-    if (!order.order_items || !drinks) return 'Unknown';
-    return order.order_items
-      .map(item => {
-        const drink = drinks.find(d => d.id === item.drink_id);
+    if (!order.drink_ids || !drinks) return 'Unknown';
+    return order.drink_ids
+      .map(id => {
+        const drink = drinks.find(d => d.id === id);
         return drink?.name || 'Unknown';
       })
       .join(', ');
@@ -42,7 +42,7 @@ export default function OrderCard({ order, drinks, onStatusChange, isBarman = fa
       <div className="flex justify-between items-start mb-3">
         <div>
           <p className="text-xs text-gray-500">Order #{order.id}</p>
-          <h4 className="text-lg font-bold">{order.customer_name}</h4>
+          <h4 className="text-lg font-bold">{order.customer_name || 'Unknown Customer'}</h4>
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500">
@@ -61,13 +61,25 @@ export default function OrderCard({ order, drinks, onStatusChange, isBarman = fa
           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
         </span>
         
-        {isBarman && order.status !== 'ready' && (
-          <button
-            onClick={() => onStatusChange(order.id, getNextStatus(order.status))}
-            className="bg-white text-gray-800 px-4 py-2 rounded font-bold text-sm hover:bg-gray-100 transition-colors"
-          >
-            {order.status === 'pending' ? 'Start Preparing' : 'Mark Ready'}
-          </button>
+        {isBarman && (
+          <div className="flex space-x-2">
+            {order.status !== 'ready' && (
+              <button
+                onClick={() => onStatusChange(order.id, getNextStatus(order.status))}
+                className="bg-white text-gray-800 px-4 py-2 rounded font-bold text-sm hover:bg-gray-100 transition-colors"
+              >
+                {order.status === 'pending' ? 'Start Preparing' : 'Mark Ready'}
+              </button>
+            )}
+            {order.status === 'ready' && onDeleteOrder && (
+              <button
+                onClick={() => onDeleteOrder(order.id)}
+                className="bg-red-500 text-white px-4 py-2 rounded font-bold text-sm hover:bg-red-600 transition-colors"
+              >
+                Delete Order
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

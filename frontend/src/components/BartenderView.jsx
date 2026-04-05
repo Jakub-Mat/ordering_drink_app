@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PINModal from './PINModal';
 import OrdersList from './OrdersList';
-import { fetchOrders, updateOrderStatus, fetchDrinks } from '../utils/api';
+import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder } from '../utils/api';
 import { playNotificationSound, highlightElement } from '../utils/notifications';
 
 const CORRECT_PIN = '1234'; // Hardcoded PIN for MVP
@@ -17,6 +17,7 @@ export default function BartenderView({ onExit }) {
   const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [message, setMessage] = useState('');
   const pollIntervalRef = useRef(null);
+  const previousOrderCountRef = useRef(0);
 
   // Handle PIN entry
   const handlePINSubmit = (pin) => {
@@ -41,6 +42,7 @@ export default function BartenderView({ onExit }) {
         const ordersList = await fetchOrders();
         setOrders(ordersList);
         setPreviousOrderCount(ordersList.length);
+        previousOrderCountRef.current = ordersList.length;
         setLoading(false);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -54,12 +56,13 @@ export default function BartenderView({ onExit }) {
     pollIntervalRef.current = setInterval(async () => {
       try {
         const ordersList = await fetchOrders();
+        if (!Array.isArray(ordersList)) return;
         
         // Check for new orders
-        if (ordersList.length > previousOrderCount) {
+        if (ordersList.length > previousOrderCountRef.current) {
           // Find new orders
           const newOrders = ordersList.filter(
-            order => !orders.find(o => o.id === order.id)
+            order => !orders.some(o => o.id === order.id)
           );
           
           // Play notification and highlight
@@ -76,6 +79,7 @@ export default function BartenderView({ onExit }) {
 
         setOrders(ordersList);
         setPreviousOrderCount(ordersList.length);
+        previousOrderCountRef.current = ordersList.length;
       } catch (error) {
         console.error('Error polling orders:', error);
       }
@@ -84,7 +88,7 @@ export default function BartenderView({ onExit }) {
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
-  }, [authenticated, orders, previousOrderCount]);
+  }, [authenticated]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -102,6 +106,24 @@ export default function BartenderView({ onExit }) {
     } catch (error) {
       console.error('Error updating order:', error);
       setMessage('Failed to update order');
+      setTimeout(() => setMessage(''), 2000);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to delete this completed order?')) return;
+    
+    try {
+      await deleteOrder(orderId);
+      
+      // Update local state
+      setOrders(prev => prev.filter(order => order.id !== orderId));
+      
+      setMessage('Order deleted ✓');
+      setTimeout(() => setMessage(''), 2000);
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      setMessage('Failed to delete order');
       setTimeout(() => setMessage(''), 2000);
     }
   };
@@ -168,6 +190,7 @@ export default function BartenderView({ onExit }) {
               orders={orders}
               drinks={drinks}
               onStatusChange={handleStatusChange}
+              onDeleteOrder={handleDeleteOrder}
               isBarman={true}
             />
           </div>

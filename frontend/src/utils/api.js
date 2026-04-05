@@ -80,15 +80,19 @@ export const updateOrderStatus = async (orderId, status) => {
 };
 
 /**
- * Fetch orders for a specific customer (filter by customer_name)
- * @param {string} customerName - Customer's name
+ * Delete an order (only if completed)
+ * @param {number} orderId - Order ID
  */
-export const fetchCustomerOrders = async (customerName) => {
+export const deleteOrder = async (orderId) => {
   try {
-    const allOrders = await fetchOrders();
-    return allOrders.filter(order => order.customer_name === customerName);
+    const response = await fetch(`${API_BASE}/orders/${orderId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete order');
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error fetching customer orders:', error);
-    return [];
+    console.error('Error deleting order:', error);
+    throw error;
   }
 };

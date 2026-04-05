@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import MenuComponent from './MenuComponent';
 import OrdersList from './OrdersList';
 import CustomerNameModal from './CustomerNameModal';
-import { fetchDrinks, createOrder, fetchCustomerOrders } from '../utils/api';
+import { fetchDrinks, createOrder, fetchOrders } from '../utils/api';
 import { getCustomer, saveCustomer, generateCustomerId } from '../utils/storage';
 
 /**
@@ -42,7 +42,7 @@ export default function CustomerView() {
     if (!customer) return;
 
     const pollOrders = async () => {
-      const customerOrders = await fetchCustomerOrders(customer.name);
+      const customerOrders = await fetchOrders();
       setOrders(customerOrders);
     };
 
@@ -84,7 +84,7 @@ export default function CustomerView() {
       setSelectedDrinks([]);
       
       // Refresh orders immediately
-      const customerOrders = await fetchCustomerOrders(customer.name);
+      const customerOrders = await fetchOrders();
       setOrders(customerOrders);
       
       setTimeout(() => setMessage(''), 3000);

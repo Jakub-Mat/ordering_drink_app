@@ -241,7 +241,7 @@ app.patch('/api/orders/:id', (req, res) => {
     }
     
     // Ověření, že status je z povolených hodnot
-    const validStatuses = ['pending', 'done', 'cancelled'];
+    const validStatuses = ['pending', 'preparing', 'ready', 'cancelled'];
     if (!validStatuses.includes(status)) {
         res.status(400).json({
             "error": `Neplatný status. Povolené: ${validStatuses.join(', ')}`
@@ -268,6 +268,39 @@ app.patch('/api/orders/:id', (req, res) => {
             });
         }
     );
+});
+
+// DELETE /api/orders/:id - Smazání objednávky (pouze pro dokončené objednávky)
+app.delete('/api/orders/:id', (req, res) => {
+    const id = req.params.id;
+    
+    // Nejprve zkontrolujeme status objednávky
+    db.get("SELECT status FROM orders WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        if (!row) {
+            res.status(404).json({"error": "Objednávka nenalezena"});
+            return;
+        }
+        if (row.status !== 'ready') {
+            res.status(400).json({"error": "Lze smazat pouze dokončené objednávky (status 'ready')"});
+            return;
+        }
+        
+        // Smazání objednávky (order_items se smažou automaticky díky CASCADE)
+        db.run("DELETE FROM orders WHERE id = ?", [id], function(err) {
+            if (err) {
+                res.status(400).json({"error": err.message});
+                return;
+            }
+            res.json({
+                "message": "Objednávka smazána",
+                "id": id
+            });
+        });
+    });
 });
 
 // Spuštění serveru
