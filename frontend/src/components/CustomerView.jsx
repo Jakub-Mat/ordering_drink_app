@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import MenuComponent from './MenuComponent';
 import OrdersList from './OrdersList';
 import CustomerNameModal from './CustomerNameModal';
+import LanguageSwitcher from './LanguageSwitcher';
 import { fetchDrinks, createOrder, fetchCustomerOrders } from '../utils/api';
 import { getCustomer, saveCustomer, generateCustomerId, clearCustomer } from '../utils/storage';
 
@@ -17,6 +19,7 @@ export default function CustomerView() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [pollInterval, setPollInterval] = useState(null);
+  const { t } = useTranslation();
 
   // Initialize customer data
   useEffect(() => {
@@ -84,7 +87,7 @@ export default function CustomerView() {
 
   const handleSubmitOrder = async () => {
     if (selectedDrinks.length === 0) {
-      setMessage('Please select at least one drink');
+      setMessage(t('pleaseSelectDrink'));
       setTimeout(() => setMessage(''), 3000);
       return;
     }
@@ -92,7 +95,7 @@ export default function CustomerView() {
     setSubmitting(true);
     try {
       await createOrder(customer.name, selectedDrinks);
-      setMessage('Order submitted! ✓');
+      setMessage(t('orderSubmitted'));
       setSelectedDrinks([]);
       
       // Refresh orders immediately
@@ -101,7 +104,7 @@ export default function CustomerView() {
       
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage('Failed to submit order. Try again.');
+      setMessage(t('orderSubmitFailed'));
       setTimeout(() => setMessage(''), 3000);
     } finally {
       setSubmitting(false);
@@ -118,15 +121,18 @@ export default function CustomerView() {
       <div className="bg-white shadow border-b-4 border-blue-500 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4 md:py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">☕ Drink Bar</h1>
-            <p className="text-gray-600 mt-2">Welcome, <strong>{customer.name}</strong>!</p>
+            <h1 className="text-2xl md:text-3xl font-bold">{t('drinkBar')}</h1>
+            <p className="text-gray-600 mt-2">{t('welcome', { name: customer.name })}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition-colors"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+            >
+              {t('logout')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -142,7 +148,7 @@ export default function CustomerView() {
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Loading menu...</p>
+            <p className="text-gray-500 text-lg">{t('loadingMenu')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -165,14 +171,14 @@ export default function CustomerView() {
                       : 'bg-green-500 hover:bg-green-600'
                   }`}
                 >
-                  {submitting ? 'Submitting...' : `Order (${selectedDrinks.length} selected)`}
+                  {submitting ? t('orderSubmitting') : t('orderButton', { count: selectedDrinks.length })}
                 </button>
               </div>
             </div>
 
             {/* Orders History - Takes 1 column on large screens */}
             <div className="lg:col-span-1">
-              <h2 className="text-2xl font-bold mb-6">Your Orders</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('yourOrders')}</h2>
               <OrdersList
                 orders={orders}
                 drinks={drinks}

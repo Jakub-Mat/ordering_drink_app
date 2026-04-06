@@ -1,16 +1,18 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Modal for PIN code entry (Bartender authentication)
  */
 export default function PINModal({ onSubmit, onCancel }) {
+  const { t } = useTranslation();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!pin.trim()) {
-      setError('Please enter the PIN');
+      setError(t('pleaseEnterPin'));
       return;
     }
     onSubmit(pin);
@@ -19,13 +21,13 @@ export default function PINModal({ onSubmit, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Bartender Access 🔐</h2>
-        <p className="text-gray-600 text-center mb-6">Enter the PIN code to access bartender panel</p>
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">{t('bartenderAccess')}</h2>
+        <p className="text-gray-600 text-center mb-6">{t('enterPinPrompt')}</p>
         
         <form onSubmit={handleSubmit}>
           <input
             type="password"
-            placeholder="PIN Code"
+            placeholder={t('pinCodePlaceholder')}
             value={pin}
             onChange={(e) => {
               setPin(e.target.value);
@@ -41,14 +43,14 @@ export default function PINModal({ onSubmit, onCancel }) {
               type="submit"
               className="flex-1 bg-red-500 text-white text-lg font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition-colors"
             >
-              Enter
+              {t('enter')}
             </button>
             <button
               type="button"
               onClick={onCancel}
               className="flex-1 bg-gray-300 text-gray-700 text-lg font-bold py-3 px-6 rounded-lg hover:bg-gray-400 transition-colors"
             >
-              Cancel
+              {t('cancel')}
             </button>
           </div>
         </form>

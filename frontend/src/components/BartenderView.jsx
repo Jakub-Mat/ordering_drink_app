@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import PINModal from './PINModal';
 import OrdersList from './OrdersList';
+import LanguageSwitcher from './LanguageSwitcher';
 import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder, createDrink, deleteDrink } from '../utils/api';
 import { playNotificationSound, highlightElement } from '../utils/notifications';
 
@@ -23,6 +25,7 @@ export default function BartenderView({ onExit }) {
   const [showDrinkManagement, setShowDrinkManagement] = useState(false);
   const [newDrinkName, setNewDrinkName] = useState('');
   const [newDrinkDescription, setNewDrinkDescription] = useState('');
+  const { t } = useTranslation();
 
   // Handle PIN entry
   const handlePINSubmit = (pin) => {
@@ -30,7 +33,7 @@ export default function BartenderView({ onExit }) {
       setAuthenticated(true);
       setMessage('');
     } else {
-      setMessage('Incorrect PIN');
+      setMessage(t('incorrectPin'));
       setTimeout(() => setMessage(''), 2000);
     }
   };
@@ -106,17 +109,17 @@ export default function BartenderView({ onExit }) {
         )
       );
       
-      setMessage('Order updated ✓');
+      setMessage(t('orderUpdated'));
       setTimeout(() => setMessage(''), 2000);
     } catch (error) {
       console.error('Error updating order:', error);
-      setMessage('Failed to update order');
+      setMessage(t('orderUpdateFailed'));
       setTimeout(() => setMessage(''), 2000);
     }
   };
 
   const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm('Are you sure you want to delete this completed order?')) return;
+    if (!window.confirm(t('confirmDeleteOrder'))) return;
     
     try {
       await deleteOrder(orderId);
@@ -124,18 +127,18 @@ export default function BartenderView({ onExit }) {
       // Update local state
       setOrders(prev => prev.filter(order => order.id !== orderId));
       
-      setMessage('Order deleted ✓');
+      setMessage(t('orderDeleted'));
       setTimeout(() => setMessage(''), 2000);
     } catch (error) {
       console.error('Error deleting order:', error);
-      setMessage('Failed to delete order');
+      setMessage(t('orderDeleteFailed'));
       setTimeout(() => setMessage(''), 2000);
     }
   };
 
   const handleCreateDrink = async () => {
     if (!newDrinkName.trim()) {
-      setMessage('Please enter a drink name');
+      setMessage(t('drinkNameRequired'));
       setTimeout(() => setMessage(''), 2000);
       return;
     }
@@ -151,17 +154,17 @@ export default function BartenderView({ onExit }) {
       setNewDrinkName('');
       setNewDrinkDescription('');
       
-      setMessage('Drink added to menu ✓');
+      setMessage(t('drinkAdded'));
       setTimeout(() => setMessage(''), 2000);
     } catch (error) {
       console.error('Error creating drink:', error);
-      setMessage('Failed to add drink');
+      setMessage(t('drinkSaveError'));
       setTimeout(() => setMessage(''), 2000);
     }
   };
 
   const handleDeleteDrink = async (drinkId, drinkName) => {
-    if (!window.confirm(`Are you sure you want to remove "${drinkName}" from the menu?`)) return;
+    if (!window.confirm(t('confirmDeleteDrink', { name: drinkName }))) return;
     
     try {
       await deleteDrink(drinkId);
@@ -169,11 +172,11 @@ export default function BartenderView({ onExit }) {
       // Update local state
       setDrinks(prev => prev.filter(drink => drink.id !== drinkId));
       
-      setMessage('Drink removed from menu ✓');
+      setMessage(t('drinkRemoved'));
       setTimeout(() => setMessage(''), 2000);
     } catch (error) {
       console.error('Error deleting drink:', error);
-      setMessage('Failed to remove drink');
+      setMessage(t('drinkSaveError'));
       setTimeout(() => setMessage(''), 2000);
     }
   };
@@ -188,18 +191,19 @@ export default function BartenderView({ onExit }) {
       <div className="bg-red-600 text-white shadow border-b-4 border-red-800 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 flex justify-between items-center">
           <h1 className="text-2xl md:text-3xl font-bold">🍹 Bartender Console</h1>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <LanguageSwitcher />
             <button
               onClick={() => setShowDrinkManagement(!showDrinkManagement)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
             >
-              {showDrinkManagement ? 'Hide Menu' : 'Manage Menu'}
+              {showDrinkManagement ? t('hideMenu') : t('manageMenu')}
             </button>
             <button
               onClick={onExit}
               className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg font-bold transition-colors"
             >
-              Exit
+              {t('exit')}
             </button>
           </div>
         </div>
@@ -217,22 +221,22 @@ export default function BartenderView({ onExit }) {
         {/* Drink Management Section */}
         {showDrinkManagement && (
           <div className="mb-8 p-6 bg-white rounded-lg shadow-lg border-2 border-blue-200">
-            <h2 className="text-2xl font-bold mb-6 text-blue-800">🍸 Menu Management</h2>
+            <h2 className="text-2xl font-bold mb-6 text-blue-800">🍸 {t('menuManagement')}</h2>
             
             {/* Add New Drink Form */}
             <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="text-lg font-semibold mb-4 text-blue-800">Add New Drink</h3>
+              <h3 className="text-lg font-semibold mb-4 text-blue-800">{t('addDrink')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <input
                   type="text"
-                  placeholder="Drink name (required)"
+                  placeholder={t('drinkNamePlaceholder')}
                   value={newDrinkName}
                   onChange={(e) => setNewDrinkName(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 />
                 <input
                   type="text"
-                  placeholder="Description (optional)"
+                  placeholder={t('drinkDescriptionPlaceholder')}
                   value={newDrinkDescription}
                   onChange={(e) => setNewDrinkDescription(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
@@ -242,13 +246,13 @@ export default function BartenderView({ onExit }) {
                 onClick={handleCreateDrink}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition-colors"
               >
-                Add Drink
+                {t('addDrink')}
               </button>
             </div>
 
             {/* Current Menu */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-blue-800">Current Menu ({drinks.length} drinks)</h3>
+              <h3 className="text-lg font-semibold mb-4 text-blue-800">{t('menuCurrent', { count: drinks.length })}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {drinks.map(drink => (
                   <div key={drink.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -257,7 +261,7 @@ export default function BartenderView({ onExit }) {
                       <button
                         onClick={() => handleDeleteDrink(drink.id, drink.name)}
                         className="text-red-600 hover:text-red-800 text-sm font-bold"
-                        title="Remove from menu"
+                        title={t('removeFromMenu')}
                       >
                         ✕
                       </button>
@@ -266,13 +270,13 @@ export default function BartenderView({ onExit }) {
                       <p className="text-sm text-gray-600">{drink.description}</p>
                     )}
                     <p className="text-xs text-gray-400 mt-2">
-                      Added: {new Date(drink.created_at).toLocaleDateString()}
+                      {t('addedDate', { date: new Date(drink.created_at).toLocaleDateString() })}
                     </p>
                   </div>
                 ))}
               </div>
               {drinks.length === 0 && (
-                <p className="text-gray-500 text-center py-8">No drinks in menu yet. Add some above!</p>
+                <p className="text-gray-500 text-center py-8">{t('noDrinksInMenu')}</p>
               )}
             </div>
           </div>
@@ -284,30 +288,30 @@ export default function BartenderView({ onExit }) {
             <p className="text-3xl font-bold text-yellow-600">
               {orders.filter(o => o.status === 'pending').length}
             </p>
-            <p className="text-sm text-yellow-700">Pending</p>
+            <p className="text-sm text-yellow-700">{t('pending')}</p>
           </div>
           <div className="bg-blue-100 border-2 border-blue-300 rounded-lg p-4 text-center">
             <p className="text-3xl font-bold text-blue-600">
               {orders.filter(o => o.status === 'preparing').length}
             </p>
-            <p className="text-sm text-blue-700">Preparing</p>
+            <p className="text-sm text-blue-700">{t('preparing')}</p>
           </div>
           <div className="bg-green-100 border-2 border-green-300 rounded-lg p-4 text-center">
             <p className="text-3xl font-bold text-green-600">
               {orders.filter(o => o.status === 'ready').length}
             </p>
-            <p className="text-sm text-green-700">Ready</p>
+            <p className="text-sm text-green-700">{t('ready')}</p>
           </div>
         </div>
 
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Loading orders...</p>
+            <p className="text-gray-500 text-lg">{t('loadingOrders')}</p>
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Active Orders</h2>
+            <h2 className="text-2xl font-bold mb-6">{t('activeOrders')}</h2>
             <OrdersList
               orders={orders}
               drinks={drinks}

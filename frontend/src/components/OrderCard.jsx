@@ -1,14 +1,18 @@
 /**
  * Individual order card component for displaying order status
  */
+import { useTranslation } from 'react-i18next';
+
 export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder, isBarman = false }) {
+  const { t } = useTranslation();
+
   // Map drink IDs to drink names
   const getDrinkNames = () => {
-    if (!order.drink_ids || !drinks) return 'Unknown';
+    if (!order.drink_ids || !drinks) return t('unknown');
     return order.drink_ids
       .map(id => {
         const drink = drinks.find(d => d.id === id);
-        return drink?.name || 'Unknown';
+        return drink?.name || t('unknown');
       })
       .join(', ');
   };
@@ -41,8 +45,8 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
     <div className={`p-4 rounded-lg border-2 ${getStatusColor(order.status)}`} id={`order-${order.id}`}>
       <div className="flex justify-between items-start mb-3">
         <div>
-          <p className="text-xs text-gray-500">Order #{order.id}</p>
-          <h4 className="text-lg font-bold">{order.customer_name || 'Unknown Customer'}</h4>
+          <p className="text-xs text-gray-500">{t('orderNumber', { id: order.id })}</p>
+          <h4 className="text-lg font-bold">{order.customer_name || t('unknownCustomer')}</h4>
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500">
@@ -52,7 +56,7 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
       </div>
 
       <div className="mb-4">
-        <p className="text-sm mb-2"><strong>Drinks:</strong></p>
+        <p className="text-sm mb-2"><strong>{t('drinks')}</strong></p>
         <div className="flex flex-wrap gap-2">
           {order.drink_ids && order.drink_ids.length > 0 ? (
             order.drink_ids.map((id) => {
@@ -62,12 +66,12 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
                   key={`${order.id}-${id}`}
                   className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
                 >
-                  {drink?.name || 'Unknown'}
+                  {drink?.name || t('unknown')}
                 </span>
               );
             })
           ) : (
-            <span className="text-sm text-gray-700">Unknown</span>
+            <span className="text-sm text-gray-700">{t('unknown')}</span>
           )}
         </div>
       </div>
@@ -84,7 +88,7 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
                 onClick={() => onStatusChange(order.id, getNextStatus(order.status))}
                 className="bg-white text-gray-800 px-4 py-2 rounded font-bold text-sm hover:bg-gray-100 transition-colors"
               >
-                {order.status === 'pending' ? 'Start Preparing' : 'Mark Ready'}
+                {order.status === 'pending' ? t('startPreparing') : t('markReady')}
               </button>
             )}
             {order.status === 'ready' && onDeleteOrder && (
@@ -92,7 +96,7 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
                 onClick={() => onDeleteOrder(order.id)}
                 className="bg-red-500 text-white px-4 py-2 rounded font-bold text-sm hover:bg-red-600 transition-colors"
               >
-                Delete Order
+                {t('deleteOrder')}
               </button>
             )}
           </div>

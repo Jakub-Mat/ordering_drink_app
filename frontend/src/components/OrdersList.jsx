@@ -1,14 +1,17 @@
 /**
  * Order list component - displays multiple orders
  */
+import { useTranslation } from 'react-i18next';
 import OrderCard from './OrderCard';
 
 export default function OrdersList({ orders, drinks, onStatusChange, onDeleteOrder, isBarman = false, highlightOrderId = null }) {
+  const { t } = useTranslation();
+
   if (orders.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500 text-lg">
-          {isBarman ? 'No orders yet - waiting for customers...' : 'You haven\'t placed any orders yet'}
+          {isBarman ? t('noOrdersWaiting') : t('noOrdersPlaced')}
         </p>
       </div>
     );
