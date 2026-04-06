@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PINModal from './PINModal';
 import OrdersList from './OrdersList';
-import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder } from '../utils/api';
+import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder, createDrink, deleteDrink } from '../utils/api';
 import { playNotificationSound, highlightElement } from '../utils/notifications';
 
 const CORRECT_PIN = '1234'; // Hardcoded PIN for MVP
@@ -18,6 +18,11 @@ export default function BartenderView({ onExit }) {
   const [message, setMessage] = useState('');
   const pollIntervalRef = useRef(null);
   const previousOrderCountRef = useRef(0);
+  
+  // Drink management state
+  const [showDrinkManagement, setShowDrinkManagement] = useState(false);
+  const [newDrinkName, setNewDrinkName] = useState('');
+  const [newDrinkDescription, setNewDrinkDescription] = useState('');
 
   // Handle PIN entry
   const handlePINSubmit = (pin) => {
@@ -128,6 +133,51 @@ export default function BartenderView({ onExit }) {
     }
   };
 
+  const handleCreateDrink = async () => {
+    if (!newDrinkName.trim()) {
+      setMessage('Please enter a drink name');
+      setTimeout(() => setMessage(''), 2000);
+      return;
+    }
+
+    try {
+      await createDrink(newDrinkName.trim(), newDrinkDescription.trim());
+      
+      // Refresh drinks list
+      const drinksList = await fetchDrinks();
+      setDrinks(drinksList);
+      
+      // Clear form
+      setNewDrinkName('');
+      setNewDrinkDescription('');
+      
+      setMessage('Drink added to menu ✓');
+      setTimeout(() => setMessage(''), 2000);
+    } catch (error) {
+      console.error('Error creating drink:', error);
+      setMessage('Failed to add drink');
+      setTimeout(() => setMessage(''), 2000);
+    }
+  };
+
+  const handleDeleteDrink = async (drinkId, drinkName) => {
+    if (!window.confirm(`Are you sure you want to remove "${drinkName}" from the menu?`)) return;
+    
+    try {
+      await deleteDrink(drinkId);
+      
+      // Update local state
+      setDrinks(prev => prev.filter(drink => drink.id !== drinkId));
+      
+      setMessage('Drink removed from menu ✓');
+      setTimeout(() => setMessage(''), 2000);
+    } catch (error) {
+      console.error('Error deleting drink:', error);
+      setMessage('Failed to remove drink');
+      setTimeout(() => setMessage(''), 2000);
+    }
+  };
+
   if (!authenticated) {
     return <PINModal onSubmit={handlePINSubmit} onCancel={onExit} />;
   }
@@ -138,12 +188,20 @@ export default function BartenderView({ onExit }) {
       <div className="bg-red-600 text-white shadow border-b-4 border-red-800 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 flex justify-between items-center">
           <h1 className="text-2xl md:text-3xl font-bold">🍹 Bartender Console</h1>
-          <button
-            onClick={onExit}
-            className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg font-bold transition-colors"
-          >
-            Exit
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowDrinkManagement(!showDrinkManagement)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+            >
+              {showDrinkManagement ? 'Hide Menu' : 'Manage Menu'}
+            </button>
+            <button
+              onClick={onExit}
+              className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+            >
+              Exit
+            </button>
+          </div>
         </div>
       </div>
 
@@ -153,6 +211,70 @@ export default function BartenderView({ onExit }) {
         {message && (
           <div className="mb-6 p-4 rounded-lg bg-green-100 text-green-800 border-2 border-green-300">
             {message}
+          </div>
+        )}
+
+        {/* Drink Management Section */}
+        {showDrinkManagement && (
+          <div className="mb-8 p-6 bg-white rounded-lg shadow-lg border-2 border-blue-200">
+            <h2 className="text-2xl font-bold mb-6 text-blue-800">🍸 Menu Management</h2>
+            
+            {/* Add New Drink Form */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-lg font-semibold mb-4 text-blue-800">Add New Drink</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input
+                  type="text"
+                  placeholder="Drink name (required)"
+                  value={newDrinkName}
+                  onChange={(e) => setNewDrinkName(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Description (optional)"
+                  value={newDrinkDescription}
+                  onChange={(e) => setNewDrinkDescription(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <button
+                onClick={handleCreateDrink}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition-colors"
+              >
+                Add Drink
+              </button>
+            </div>
+
+            {/* Current Menu */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-blue-800">Current Menu ({drinks.length} drinks)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {drinks.map(drink => (
+                  <div key={drink.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-800">{drink.name}</h4>
+                      <button
+                        onClick={() => handleDeleteDrink(drink.id, drink.name)}
+                        className="text-red-600 hover:text-red-800 text-sm font-bold"
+                        title="Remove from menu"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {drink.description && (
+                      <p className="text-sm text-gray-600">{drink.description}</p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">
+                      Added: {new Date(drink.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {drinks.length === 0 && (
+                <p className="text-gray-500 text-center py-8">No drinks in menu yet. Add some above!</p>
+              )}
+            </div>
           </div>
         )}
 

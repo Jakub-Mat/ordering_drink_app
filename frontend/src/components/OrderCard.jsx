@@ -53,7 +53,23 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
 
       <div className="mb-4">
         <p className="text-sm mb-2"><strong>Drinks:</strong></p>
-        <p className="text-sm text-gray-700">{getDrinkNames()}</p>
+        <div className="flex flex-wrap gap-2">
+          {order.drink_ids && order.drink_ids.length > 0 ? (
+            order.drink_ids.map((id) => {
+              const drink = drinks.find(d => d.id === id);
+              return (
+                <span
+                  key={`${order.id}-${id}`}
+                  className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
+                >
+                  {drink?.name || 'Unknown'}
+                </span>
+              );
+            })
+          ) : (
+            <span className="text-sm text-gray-700">Unknown</span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between">

@@ -16,6 +16,50 @@ export const fetchDrinks = async () => {
 };
 
 /**
+ * Create a new drink
+ * @param {string} name - Drink name
+ * @param {string} description - Drink description
+ */
+export const createDrink = async (name, description) => {
+  try {
+    const response = await fetch(`${API_BASE}/drinks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        description: description || '',
+      }),
+    });
+    if (!response.ok) throw new Error('Failed to create drink');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error creating drink:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a drink
+ * @param {number} drinkId - Drink ID to delete
+ */
+export const deleteDrink = async (drinkId) => {
+  try {
+    const response = await fetch(`${API_BASE}/drinks/${drinkId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete drink');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error deleting drink:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch all orders (for bartender view)
  */
 export const fetchOrders = async () => {
@@ -94,5 +138,19 @@ export const deleteOrder = async (orderId) => {
   } catch (error) {
     console.error('Error deleting order:', error);
     throw error;
+  }
+};
+
+/**
+ * Fetch orders for a specific customer (filter by customer_name)
+ * @param {string} customerName - Customer's name
+ */
+export const fetchCustomerOrders = async (customerName) => {
+  try {
+    const allOrders = await fetchOrders();
+    return allOrders.filter(order => order.customer_name === customerName);
+  } catch (error) {
+    console.error('Error fetching customer orders:', error);
+    return [];
   }
 };

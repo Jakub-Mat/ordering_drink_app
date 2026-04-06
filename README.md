@@ -113,7 +113,7 @@ CREATE TABLE order_items (
 
 ### Access the Application
 - **Customer View**: `http://localhost:5173`
-- **Bartender View**: `http://localhost:5173?barman=true` (PIN: `1234`)
+- **Bartender View**: `http://localhost:5173?ba1234rman=true` (PIN: `1234`)
 
 ## 📱 User Experience
 
