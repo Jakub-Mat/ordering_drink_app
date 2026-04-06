@@ -42,7 +42,19 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
   };
 
   return (
-    <div className={`p-4 rounded-lg border-2 ${getStatusColor(order.status)}`} id={`order-${order.id}`}>
+    <div 
+      className={`p-4 rounded-lg border-2 ${getStatusColor(order.status)} ${
+        isBarman && order.status !== 'ready' 
+          ? 'cursor-pointer hover:shadow-lg transition-shadow' 
+          : ''
+      }`} 
+      id={`order-${order.id}`}
+      onClick={() => {
+        if (isBarman && order.status !== 'ready') {
+          onStatusChange(order.id, getNextStatus(order.status));
+        }
+      }}
+    >
       <div className="flex justify-between items-start mb-3">
         <div>
           <p className="text-xs text-gray-500">{t('orderNumber', { id: order.id })}</p>
@@ -50,7 +62,11 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500">
-            {new Date(order.created_at).toLocaleTimeString()}
+            {/* ručně jsem opravil čas zobrazení, aby byl v místním formátu a přidal jsem "Z" na konec, aby se správně interpretoval jako UTC čas */}
+            {new Date(`${order.created_at}Z`).toLocaleTimeString('cs-CZ', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+          })}
           </p>
         </div>
       </div>
@@ -78,7 +94,7 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
 
       <div className="flex items-center justify-between">
         <span className="font-bold text-sm uppercase">
-          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+          {t(`${order.status}Status`)}
         </span>
         
         {isBarman && (

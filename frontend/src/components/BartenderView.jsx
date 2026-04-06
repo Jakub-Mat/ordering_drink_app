@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import PINModal from './PINModal';
-import OrdersList from './OrdersList';
+import KanbanBoard from './KanbanBoard';
 import LanguageSwitcher from './LanguageSwitcher';
 import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder, createDrink, deleteDrink } from '../utils/api';
 import { playNotificationSound, highlightElement } from '../utils/notifications';
@@ -282,44 +282,18 @@ export default function BartenderView({ onExit }) {
           </div>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-yellow-100 border-2 border-yellow-300 rounded-lg p-4 text-center">
-            <p className="text-3xl font-bold text-yellow-600">
-              {orders.filter(o => o.status === 'pending').length}
-            </p>
-            <p className="text-sm text-yellow-700">{t('pending')}</p>
-          </div>
-          <div className="bg-blue-100 border-2 border-blue-300 rounded-lg p-4 text-center">
-            <p className="text-3xl font-bold text-blue-600">
-              {orders.filter(o => o.status === 'preparing').length}
-            </p>
-            <p className="text-sm text-blue-700">{t('preparing')}</p>
-          </div>
-          <div className="bg-green-100 border-2 border-green-300 rounded-lg p-4 text-center">
-            <p className="text-3xl font-bold text-green-600">
-              {orders.filter(o => o.status === 'ready').length}
-            </p>
-            <p className="text-sm text-green-700">{t('ready')}</p>
-          </div>
-        </div>
-
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">{t('loadingOrders')}</p>
           </div>
         ) : (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">{t('activeOrders')}</h2>
-            <OrdersList
-              orders={orders}
-              drinks={drinks}
-              onStatusChange={handleStatusChange}
-              onDeleteOrder={handleDeleteOrder}
-              isBarman={true}
-            />
-          </div>
+          <KanbanBoard
+            orders={orders}
+            drinks={drinks}
+            onStatusChange={handleStatusChange}
+            onDeleteOrder={handleDeleteOrder}
+          />
         )}
       </div>
     </div>

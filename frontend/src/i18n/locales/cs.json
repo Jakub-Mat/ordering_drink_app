@@ -44,7 +44,7 @@
   "removeFromMenu": "Odebrat z nabídky",
   "addedDate": "Přidáno: {{date}}",
   "noDrinksInMenu": "V nabídce zatím žádné nápoje. Přidejte je výše!",
-  "pending": "Čekící",
+  "pending": "Čekající",
   "preparing": "Příprava",
   "ready": "Hotovo",
   "loadingOrders": "Načítání objednávek...",
@@ -61,5 +61,15 @@
   "markReady": "Označit jako hotovo",
   "deleteOrder": "Smazat objednávku",
   "noOrdersWaiting": "Žádné objednávky - čekáme na zákazníky...",
-  "noOrdersPlaced": "Zatím jste neobjednali nic"
+  "noOrdersPlaced": "Zatím jste neobjednali nic",
+  "kanbanTitle": "Pracovní postup objednávek",
+  "columnPending": "Čekající",
+  "columnPreparing": "Příprava",
+  "columnReady": "Hotovo",
+  "noOrdersInColumn": "Žádné objednávky",
+  "clickToAdvance": "Kliknutím postupujte dále",
+  "orderStatus": "Stav",
+  "pendingStatus": "Čekající",
+  "preparingStatus": "Příprava",
+  "readyStatus": "Hotovo"
 }

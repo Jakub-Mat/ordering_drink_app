@@ -61,5 +61,15 @@
   "markReady": "Mark Ready",
   "deleteOrder": "Delete Order",
   "noOrdersWaiting": "No orders yet - waiting for customers...",
-  "noOrdersPlaced": "You haven't placed any orders yet"
+  "noOrdersPlaced": "You haven't placed any orders yet",
+  "kanbanTitle": "Order Workflow",
+  "columnPending": "Pending",
+  "columnPreparing": "Preparing",
+  "columnReady": "Ready",
+  "noOrdersInColumn": "No orders",
+  "clickToAdvance": "Click to advance",
+  "orderStatus": "Status",
+  "pendingStatus": "Pending",
+  "preparingStatus": "Preparing",
+  "readyStatus": "Ready"
 }
