@@ -3,10 +3,39 @@ import { useTranslation } from 'react-i18next';
 import PINModal from './PINModal';
 import KanbanBoard from './KanbanBoard';
 import LanguageSwitcher from './LanguageSwitcher';
-import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder, createDrink, deleteDrink } from '../utils/api';
+import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder, createDrink, updateDrink, deleteDrink } from '../utils/api';
 import { playNotificationSound, highlightElement } from '../utils/notifications';
 
+// Import drink images
+import beerImg from '../assets/drink_icons/beer.png';
+import coffeeImg from '../assets/drink_icons/coffee.png';
+import colaImg from '../assets/drink_icons/cola.png';
+import mochitoImg from '../assets/drink_icons/mochito.png';
+import sangiraImg from '../assets/drink_icons/sangira.png';
+import sweetDrinkImg from '../assets/drink_icons/sweetDrink.png';
+import teaImg from '../assets/drink_icons/tea.png';
+import waterImg from '../assets/drink_icons/water.png';
+import wineImg from '../assets/drink_icons/wine.png';
+
 const CORRECT_PIN = '1234'; // Hardcoded PIN for MVP
+
+// Available drink images
+const DRINK_IMAGES = [
+  { filename: 'beer.png', src: beerImg, label: 'Beer' },
+  { filename: 'coffee.png', src: coffeeImg, label: 'Coffee' },
+  { filename: 'cola.png', src: colaImg, label: 'Cola' },
+  { filename: 'mochito.png', src: mochitoImg, label: 'Mochito' },
+  { filename: 'sangira.png', src: sangiraImg, label: 'Sangira' },
+  { filename: 'sweetDrink.png', src: sweetDrinkImg, label: 'Sweet Drink' },
+  { filename: 'tea.png', src: teaImg, label: 'Tea' },
+  { filename: 'water.png', src: waterImg, label: 'Water' },
+  { filename: 'wine.png', src: wineImg, label: 'Wine' }
+];
+
+const getImageSrc = (filename) => {
+  const image = DRINK_IMAGES.find(item => item.filename === filename);
+  return image ? image.src : waterImg;
+};
 
 /**
  * Bartender View - Order management interface
@@ -16,15 +45,17 @@ export default function BartenderView({ onExit }) {
   const [orders, setOrders] = useState([]);
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [previousOrderCount, setPreviousOrderCount] = useState(0);
   const [message, setMessage] = useState('');
   const pollIntervalRef = useRef(null);
   const previousOrderCountRef = useRef(0);
+  const ordersRef = useRef([]);
   
   // Drink management state
   const [showDrinkManagement, setShowDrinkManagement] = useState(false);
   const [newDrinkName, setNewDrinkName] = useState('');
   const [newDrinkDescription, setNewDrinkDescription] = useState('');
+  const [newDrinkIconName, setNewDrinkIconName] = useState('water.png');
+  const [editingDrinkId, setEditingDrinkId] = useState(null);
   const { t } = useTranslation();
 
   // Handle PIN entry
@@ -49,7 +80,7 @@ export default function BartenderView({ onExit }) {
         
         const ordersList = await fetchOrders();
         setOrders(ordersList);
-        setPreviousOrderCount(ordersList.length);
+        ordersRef.current = ordersList;
         previousOrderCountRef.current = ordersList.length;
         setLoading(false);
       } catch (error) {
@@ -70,7 +101,7 @@ export default function BartenderView({ onExit }) {
         if (ordersList.length > previousOrderCountRef.current) {
           // Find new orders
           const newOrders = ordersList.filter(
-            order => !orders.some(o => o.id === order.id)
+            order => !ordersRef.current.some(o => o.id === order.id)
           );
           
           // Play notification and highlight
@@ -86,7 +117,7 @@ export default function BartenderView({ onExit }) {
         }
 
         setOrders(ordersList);
-        setPreviousOrderCount(ordersList.length);
+        ordersRef.current = ordersList;
         previousOrderCountRef.current = ordersList.length;
       } catch (error) {
         console.error('Error polling orders:', error);
@@ -136,7 +167,21 @@ export default function BartenderView({ onExit }) {
     }
   };
 
-  const handleCreateDrink = async () => {
+  const resetDrinkForm = () => {
+    setNewDrinkName('');
+    setNewDrinkDescription('');
+    setNewDrinkIconName('water.png');
+    setEditingDrinkId(null);
+  };
+
+  const handleEditDrink = (drink) => {
+    setEditingDrinkId(drink.id);
+    setNewDrinkName(drink.name);
+    setNewDrinkDescription(drink.description || '');
+    setNewDrinkIconName(drink.icon_name || 'water.png');
+  };
+
+  const handleSaveDrink = async () => {
     if (!newDrinkName.trim()) {
       setMessage(t('drinkNameRequired'));
       setTimeout(() => setMessage(''), 2000);
@@ -144,20 +189,23 @@ export default function BartenderView({ onExit }) {
     }
 
     try {
-      await createDrink(newDrinkName.trim(), newDrinkDescription.trim());
+      if (editingDrinkId) {
+        await updateDrink(editingDrinkId, newDrinkName.trim(), newDrinkDescription.trim(), newDrinkIconName);
+      } else {
+        await createDrink(newDrinkName.trim(), newDrinkDescription.trim(), newDrinkIconName);
+      }
       
       // Refresh drinks list
       const drinksList = await fetchDrinks();
       setDrinks(drinksList);
       
       // Clear form
-      setNewDrinkName('');
-      setNewDrinkDescription('');
+      resetDrinkForm();
       
-      setMessage(t('drinkAdded'));
+      setMessage(editingDrinkId ? t('drinkUpdated') : t('drinkAdded'));
       setTimeout(() => setMessage(''), 2000);
     } catch (error) {
-      console.error('Error creating drink:', error);
+      console.error('Error saving drink:', error);
       setMessage(t('drinkSaveError'));
       setTimeout(() => setMessage(''), 2000);
     }
@@ -242,12 +290,47 @@ export default function BartenderView({ onExit }) {
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 />
               </div>
-              <button
-                onClick={handleCreateDrink}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition-colors"
-              >
-                {t('addDrink')}
-              </button>
+              
+              {/* Icon Selector */}
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold mb-2 text-blue-700">{t('selectIcon')}:</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {DRINK_IMAGES.map(image => (
+                    <button
+                      key={image.filename}
+                      type="button"
+                      onClick={() => setNewDrinkIconName(image.filename)}
+                      className={`p-2 rounded-lg border-2 transition-all text-center ${
+                        newDrinkIconName === image.filename
+                          ? 'border-blue-500 bg-blue-100'
+                          : 'border-gray-300 bg-white hover:border-blue-300'
+                      }`}
+                      title={image.label}
+                    >
+                      <img src={image.src} alt={image.label} className="w-12 h-12 mx-auto mb-1 object-contain" />
+                      <div className="text-xs font-medium">{image.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={handleSaveDrink}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition-colors"
+                >
+                  {editingDrinkId ? t('saveChanges') : t('addDrink')}
+                </button>
+                {editingDrinkId && (
+                  <button
+                    type="button"
+                    onClick={resetDrinkForm}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-bold transition-colors"
+                  >
+                    {t('cancel')}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Current Menu */}
@@ -256,22 +339,40 @@ export default function BartenderView({ onExit }) {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {drinks.map(drink => (
                   <div key={drink.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-800">{drink.name}</h4>
-                      <button
-                        onClick={() => handleDeleteDrink(drink.id, drink.name)}
-                        className="text-red-600 hover:text-red-800 text-sm font-bold"
-                        title={t('removeFromMenu')}
-                      >
-                        ✕
-                      </button>
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <div>
+                        <h4 className="font-semibold text-gray-800">{drink.name}</h4>
+                        {drink.description && (
+                          <p className="text-sm text-gray-600">{drink.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEditDrink(drink)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-bold"
+                          title={t('editDrink')}
+                        >
+                          {t('edit')}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDrink(drink.id, drink.name)}
+                          className="text-red-600 hover:text-red-800 text-sm font-bold"
+                          title={t('removeFromMenu')}
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
-                    {drink.description && (
-                      <p className="text-sm text-gray-600">{drink.description}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-2">
-                      {t('addedDate', { date: new Date(drink.created_at).toLocaleDateString() })}
-                    </p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <img
+                        src={getImageSrc(drink.icon_name || 'water.png')}
+                        alt={drink.name}
+                        className="w-10 h-10 rounded-lg object-contain border border-gray-200"
+                      />
+                      <p className="text-xs text-gray-400">
+                        {t('addedDate', { date: new Date(drink.created_at).toLocaleDateString() })}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>

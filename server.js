@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const app = express();
 const port = 3001; // Backend poběží na portu 3001
+const host = '0.0.0.0'; // Povolit přístup zvenčí (pokud je potřeba pro Docker)
 
 // Povolíme přijímat data z Reactu (který poběží jinde) a formát JSON
 app.use(cors());
@@ -24,8 +25,36 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
             description TEXT,
+            icon_name TEXT DEFAULT 'water.png',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        // Ensure only icon_name column exists
+        db.all(`PRAGMA table_info(drinks)`, [], (err, columns) => {
+            if (err) {
+                console.error('Chyba při čtení schématu tabulky drinks:', err.message);
+                return;
+            }
+            const hasIconName = columns.some(column => column.name === 'icon_name');
+            const hasIcon = columns.some(column => column.name === 'icon');
+
+            if (!hasIconName) {
+                db.run(`ALTER TABLE drinks ADD COLUMN icon_name TEXT DEFAULT 'water.png'`, (alterErr) => {
+                    if (alterErr) {
+                        console.error('Chyba při přidávání sloupce icon_name:', alterErr.message);
+                    }
+                });
+            }
+
+            // Drop old icon column if it exists
+            if (hasIcon) {
+                db.run(`ALTER TABLE drinks DROP COLUMN icon`, (dropErr) => {
+                    if (dropErr) {
+                        console.error('Chyba při odstraňování sloupce icon:', dropErr.message);
+                    }
+                });
+            }
+        });
         
         // Vytvoření tabulky orders
         db.run(`CREATE TABLE IF NOT EXISTS orders (
@@ -50,8 +79,7 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
 
 // GET /api/drinks - Získání všech nápojů z menu
 app.get('/api/drinks', (req, res) => {
-    db.all("SELECT * FROM drinks ORDER BY created_at DESC", [], (err, rows) => {
-        if (err) {
+    db.all("SELECT id, name, description, COALESCE(icon_name, 'water.png') AS icon_name, created_at FROM drinks ORDER BY created_at DESC", [], (err, rows) => {        if (err) {
             res.status(400).json({"error": err.message});
             return;
         }
@@ -63,7 +91,8 @@ app.get('/api/drinks', (req, res) => {
 
 // POST /api/drinks - Vytvoření nového nápoje v menu
 app.post('/api/drinks', (req, res) => {
-    const { name, description } = req.body;
+    const { name, description, icon_name } = req.body;
+    const iconName = icon_name || 'water.png';
     
     // Validace
     if (!name) {
@@ -72,8 +101,8 @@ app.post('/api/drinks', (req, res) => {
     }
     
     db.run(
-        `INSERT INTO drinks (name, description) VALUES (?, ?)`,
-        [name, description || ''],
+        `INSERT INTO drinks (name, description, icon_name) VALUES (?, ?, ?)`,
+        [name, description || '', iconName],
         function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE')) {
@@ -87,7 +116,45 @@ app.post('/api/drinks', (req, res) => {
                 "id": this.lastID,
                 "name": name,
                 "description": description || '',
+                "icon_name": iconName,
                 "created_at": new Date().toISOString()
+            });
+        }
+    );
+});
+
+// PATCH /api/drinks/:id - Aktualizace existujícího nápoje
+app.patch('/api/drinks/:id', (req, res) => {
+    const id = req.params.id;
+    const { name, description, icon_name } = req.body;
+    const iconName = icon_name || 'water.png';
+
+    if (!name) {
+        res.status(400).json({"error": "name je povinný"});
+        return;
+    }
+
+    db.run(
+        `UPDATE drinks SET name = ?, description = ?, icon_name = ? WHERE id = ?`,
+        [name, description || '', iconName, id],
+        function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE')) {
+                    res.status(400).json({"error": "Nápoj s tímto jménem již existuje"});
+                } else {
+                    res.status(400).json({"error": err.message});
+                }
+                return;
+            }
+            if (this.changes === 0) {
+                res.status(404).json({"error": "Nápoj nenalezen"});
+                return;
+            }
+            res.json({
+                "id": Number(id),
+                "name": name,
+                "description": description || '',
+                "icon_name": iconName
             });
         }
     );
@@ -304,6 +371,15 @@ app.delete('/api/orders/:id', (req, res) => {
 });
 
 // Spuštění serveru
-app.listen(port, () => {
-    console.log(`Backend server běží na adrese http://localhost:${port}`);
+app.listen(port, host, () => {
+    console.log(`Backend server běží na http://${host}:${port}`);
+    console.log(`API endpoints:`);
+    console.log(`GET /api/drinks - Získat všechny nápoje`);
+    console.log(`POST /api/drinks - Vytvořit nový nápoj`);
+    console.log(`DELETE /api/drinks/:id - Smazat nápoj`);
+    console.log(`GET /api/orders - Získat všechny objednávky`);
+    console.log(`POST /api/orders - Vytvořit novou objednávku`);
+    console.log(`PATCH /api/orders/:id - Aktualizovat status objednávky`);
+    console.log(`DELETE /api/orders/:id - Smazat objednávku (pouze pokud je 'ready')`);
+    console.log(`Pro ukončení serveru stiskněte Ctrl+C`);
 });

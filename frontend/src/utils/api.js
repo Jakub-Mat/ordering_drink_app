@@ -1,4 +1,6 @@
-const API_BASE = 'http://localhost:3001/api';
+// const API_BASE = 'http://localhost:3001/api';
+const API_TIMEOUT = 5000; // 5 sekund timeout pro všechny API požadavky
+const API_BASE = 'http://172.16.10.105:3001/api'; // Pro přístup zvenčí (Docker)
 
 /**
  * Fetch all drinks from the menu
@@ -19,8 +21,9 @@ export const fetchDrinks = async () => {
  * Create a new drink
  * @param {string} name - Drink name
  * @param {string} description - Drink description
+ * @param {string} iconName - Drink icon filename
  */
-export const createDrink = async (name, description) => {
+export const createDrink = async (name, description, iconName) => {
   try {
     const response = await fetch(`${API_BASE}/drinks`, {
       method: 'POST',
@@ -30,6 +33,7 @@ export const createDrink = async (name, description) => {
       body: JSON.stringify({
         name,
         description: description || '',
+        icon_name: iconName || 'water.png',
       }),
     });
     if (!response.ok) throw new Error('Failed to create drink');
@@ -37,6 +41,35 @@ export const createDrink = async (name, description) => {
     return data;
   } catch (error) {
     console.error('Error creating drink:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing drink
+ * @param {number} drinkId - Drink ID
+ * @param {string} name - Drink name
+ * @param {string} description - Drink description
+ * @param {string} iconName - Drink icon filename
+ */
+export const updateDrink = async (drinkId, name, description, iconName) => {
+  try {
+    const response = await fetch(`${API_BASE}/drinks/${drinkId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        description: description || '',
+        icon_name: iconName || 'water.png',
+      }),
+    });
+    if (!response.ok) throw new Error('Failed to update drink');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error updating drink:', error);
     throw error;
   }
 };
