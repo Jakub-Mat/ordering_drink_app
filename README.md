@@ -112,8 +112,10 @@ CREATE TABLE order_items (
    Frontend runs on `http://localhost:5173`
 
 ### Access the Application
+### Access the App
 - **Customer View**: `http://localhost:5173`
-- **Bartender View**: `http://localhost:5173?ba1234rman=true` (PIN: `1234`)
+- **Bartender View**: `http://localhost:5173?barman=true`
+- **Bartender PIN**: `1234`
 
 ## 📱 User Experience
 
