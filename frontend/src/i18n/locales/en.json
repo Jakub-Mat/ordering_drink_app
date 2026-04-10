@@ -41,7 +41,12 @@
   "selected": "✓ Selected",
   "drinkNamePlaceholder": "Drink name (required)",
   "drinkDescriptionPlaceholder": "Description (optional)",
-  "selectIcon": "Select Icon",
+  "selectCategory": "Select Category",
+  "categoryBeer": "Beer",
+  "categoryWater": "Water",
+  "categoryNonAlcoholic": "Non alcoholic drinks",
+  "categoryHot": "Hot drinks",
+  "categoryAlcoholic": "Alcoholic drinks",
   "saveChanges": "Save Changes",
   "edit": "Edit",
   "editDrink": "Edit drink",
@@ -61,7 +66,7 @@
   "orderNumber": "Order #{{id}}",
   "unknownCustomer": "Unknown Customer",
   "unknown": "Unknown",
-  "drinks": "Drinks:",
+  "drinks": "Drinks",
   "startPreparing": "Start Preparing",
   "markReady": "Mark Ready",
   "deleteOrder": "Delete Order",
@@ -76,5 +81,7 @@
   "orderStatus": "Status",
   "pendingStatus": "Pending",
   "preparingStatus": "Preparing",
-  "readyStatus": "Ready"
+  "readyStatus": "Ready",
+  "order": "order",
+  "orders": "orders"
 }

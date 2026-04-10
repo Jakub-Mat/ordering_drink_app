@@ -17,25 +17,43 @@ import teaImg from '../assets/drink_icons/tea.png';
 import waterImg from '../assets/drink_icons/water.png';
 import wineImg from '../assets/drink_icons/wine.png';
 
+// Mapping of filenames to imported images
+const drinkImageMap = {
+  'beer.png': beerImg,
+  'coffee.png': coffeeImg,
+  'cola.png': colaImg,
+  'mochito.png': mochitoImg,
+  'sangira.png': sangiraImg,
+  'sweetDrink.png': sweetDrinkImg,
+  'tea.png': teaImg,
+  'water.png': waterImg,
+  'wine.png': wineImg
+};
+
+// Mapping of category ID to image filename
+const categoryImageMap = {
+  1: 'beer.png',
+  2: 'water.png',
+  3: 'sweetDrink.png',
+  4: 'coffee.png',
+  5: 'mochito.png',
+};
+
+// Function to get drink image with fallback
+const getDrinkImage = (filename) => {
+  return drinkImageMap[filename] || drinkImageMap['water.png'];
+};
+
 const CORRECT_PIN = '1234'; // Hardcoded PIN for MVP
 
-// Available drink images
-const DRINK_IMAGES = [
-  { filename: 'beer.png', src: beerImg, label: 'Beer' },
-  { filename: 'coffee.png', src: coffeeImg, label: 'Coffee' },
-  { filename: 'cola.png', src: colaImg, label: 'Cola' },
-  { filename: 'mochito.png', src: mochitoImg, label: 'Mochito' },
-  { filename: 'sangira.png', src: sangiraImg, label: 'Sangira' },
-  { filename: 'sweetDrink.png', src: sweetDrinkImg, label: 'Sweet Drink' },
-  { filename: 'tea.png', src: teaImg, label: 'Tea' },
-  { filename: 'water.png', src: waterImg, label: 'Water' },
-  { filename: 'wine.png', src: wineImg, label: 'Wine' }
+// Available drink categories
+const DRINK_CATEGORIES = [
+  { id: 1, key: 'categoryBeer' },
+  { id: 2, key: 'categoryWater' },
+  { id: 3, key: 'categoryNonAlcoholic' },
+  { id: 4, key: 'categoryHot' },
+  { id: 5, key: 'categoryAlcoholic' }
 ];
-
-const getImageSrc = (filename) => {
-  const image = DRINK_IMAGES.find(item => item.filename === filename);
-  return image ? image.src : waterImg;
-};
 
 /**
  * Bartender View - Order management interface
@@ -54,7 +72,7 @@ export default function BartenderView({ onExit }) {
   const [showDrinkManagement, setShowDrinkManagement] = useState(false);
   const [newDrinkName, setNewDrinkName] = useState('');
   const [newDrinkDescription, setNewDrinkDescription] = useState('');
-  const [newDrinkIconName, setNewDrinkIconName] = useState('water.png');
+  const [newDrinkCategory, setNewDrinkCategory] = useState(3);
   const [editingDrinkId, setEditingDrinkId] = useState(null);
   const { t } = useTranslation();
 
@@ -170,7 +188,7 @@ export default function BartenderView({ onExit }) {
   const resetDrinkForm = () => {
     setNewDrinkName('');
     setNewDrinkDescription('');
-    setNewDrinkIconName('water.png');
+    setNewDrinkCategory(3);
     setEditingDrinkId(null);
   };
 
@@ -178,7 +196,7 @@ export default function BartenderView({ onExit }) {
     setEditingDrinkId(drink.id);
     setNewDrinkName(drink.name);
     setNewDrinkDescription(drink.description || '');
-    setNewDrinkIconName(drink.icon_name || 'water.png');
+    setNewDrinkCategory(drink.category || 3);
   };
 
   const handleSaveDrink = async () => {
@@ -190,9 +208,9 @@ export default function BartenderView({ onExit }) {
 
     try {
       if (editingDrinkId) {
-        await updateDrink(editingDrinkId, newDrinkName.trim(), newDrinkDescription.trim(), newDrinkIconName);
+        await updateDrink(editingDrinkId, newDrinkName.trim(), newDrinkDescription.trim(), newDrinkCategory);
       } else {
-        await createDrink(newDrinkName.trim(), newDrinkDescription.trim(), newDrinkIconName);
+        await createDrink(newDrinkName.trim(), newDrinkDescription.trim(), newDrinkCategory);
       }
       
       // Refresh drinks list
@@ -291,27 +309,20 @@ export default function BartenderView({ onExit }) {
                 />
               </div>
               
-              {/* Icon Selector */}
+              {/* Category Selector */}
               <div className="mb-4">
-                <h4 className="text-sm font-semibold mb-2 text-blue-700">{t('selectIcon')}:</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {DRINK_IMAGES.map(image => (
-                    <button
-                      key={image.filename}
-                      type="button"
-                      onClick={() => setNewDrinkIconName(image.filename)}
-                      className={`p-2 rounded-lg border-2 transition-all text-center ${
-                        newDrinkIconName === image.filename
-                          ? 'border-blue-500 bg-blue-100'
-                          : 'border-gray-300 bg-white hover:border-blue-300'
-                      }`}
-                      title={image.label}
-                    >
-                      <img src={image.src} alt={image.label} className="w-12 h-12 mx-auto mb-1 object-contain" />
-                      <div className="text-xs font-medium">{image.label}</div>
-                    </button>
+                <label className="block text-sm font-semibold mb-2 text-blue-700">{t('selectCategory')}:</label>
+                <select
+                  value={newDrinkCategory}
+                  onChange={(e) => setNewDrinkCategory(parseInt(e.target.value))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                >
+                  {DRINK_CATEGORIES.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {t(category.key)}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
               
               <div className="flex flex-wrap items-center gap-3">
@@ -365,7 +376,7 @@ export default function BartenderView({ onExit }) {
                     </div>
                     <div className="flex items-center gap-3 mt-2">
                       <img
-                        src={getImageSrc(drink.icon_name || 'water.png')}
+                        src={getDrinkImage(categoryImageMap[drink.category] || 'water.png')}
                         alt={drink.name}
                         className="w-10 h-10 rounded-lg object-contain border border-gray-200"
                       />

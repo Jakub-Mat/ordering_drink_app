@@ -41,7 +41,12 @@
   "selected": "✓ Vybráno",
   "drinkNamePlaceholder": "Název nápoje (povinné)",
   "drinkDescriptionPlaceholder": "Popis (volitelné)",
-  "selectIcon": "Vybrat ikonu",
+  "selectCategory": "Vybrat kategorii",
+  "categoryBeer": "Pivo",
+  "categoryWater": "Voda",
+  "categoryNonAlcoholic": "Nealkoholické nápoje",
+  "categoryHot": "Horké nápoje",
+  "categoryAlcoholic": "Alkoholické nápoje",
   "saveChanges": "Uložit změny",
   "edit": "Upravit",
   "editDrink": "Upravit nápoj",
@@ -61,7 +66,7 @@
   "orderNumber": "Objednávka č. {{id}}",
   "unknownCustomer": "Neznámý zákazník",
   "unknown": "Neznámé",
-  "drinks": "Nápoje:",
+  "drinks": "Nápoje",
   "startPreparing": "Začít připravovat",
   "markReady": "Označit jako hotovo",
   "deleteOrder": "Smazat objednávku",
@@ -76,5 +81,7 @@
   "orderStatus": "Stav",
   "pendingStatus": "Čekající",
   "preparingStatus": "Příprava",
-  "readyStatus": "Hotovo"
+  "readyStatus": "Hotovo",
+  "order": "objednávka",
+  "orders": "objednávky"
 }

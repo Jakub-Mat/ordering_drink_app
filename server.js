@@ -25,11 +25,11 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
             description TEXT,
-            icon_name TEXT DEFAULT 'water.png',
+            category INTEGER DEFAULT 3,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // Ensure only icon_name column exists
+        // Migration: wipe data, remove icon_name, add category
         db.all(`PRAGMA table_info(drinks)`, [], (err, columns) => {
             if (err) {
                 console.error('Chyba při čtení schématu tabulky drinks:', err.message);
@@ -37,20 +37,36 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
             }
             const hasIconName = columns.some(column => column.name === 'icon_name');
             const hasIcon = columns.some(column => column.name === 'icon');
+            const hasCategory = columns.some(column => column.name === 'category');
 
-            if (!hasIconName) {
-                db.run(`ALTER TABLE drinks ADD COLUMN icon_name TEXT DEFAULT 'water.png'`, (alterErr) => {
-                    if (alterErr) {
-                        console.error('Chyba při přidávání sloupce icon_name:', alterErr.message);
+            // Wipe all data
+            db.run("DELETE FROM drinks", (wipeErr) => {
+                if (wipeErr) {
+                    console.error('Chyba při mazání dat z drinks:', wipeErr.message);
+                }
+            });
+
+            // Drop old columns
+            if (hasIconName) {
+                db.run(`ALTER TABLE drinks DROP COLUMN icon_name`, (dropErr) => {
+                    if (dropErr) {
+                        console.error('Chyba při odstraňování sloupce icon_name:', dropErr.message);
                     }
                 });
             }
-
-            // Drop old icon column if it exists
             if (hasIcon) {
                 db.run(`ALTER TABLE drinks DROP COLUMN icon`, (dropErr) => {
                     if (dropErr) {
                         console.error('Chyba při odstraňování sloupce icon:', dropErr.message);
+                    }
+                });
+            }
+
+            // Add category if missing
+            if (!hasCategory) {
+                db.run(`ALTER TABLE drinks ADD COLUMN category INTEGER DEFAULT 3`, (alterErr) => {
+                    if (alterErr) {
+                        console.error('Chyba při přidávání sloupce category:', alterErr.message);
                     }
                 });
             }
@@ -79,7 +95,7 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
 
 // GET /api/drinks - Získání všech nápojů z menu
 app.get('/api/drinks', (req, res) => {
-    db.all("SELECT id, name, description, COALESCE(icon_name, 'water.png') AS icon_name, created_at FROM drinks ORDER BY created_at DESC", [], (err, rows) => {        if (err) {
+    db.all("SELECT id, name, description, category, created_at FROM drinks ORDER BY created_at DESC", [], (err, rows) => {        if (err) {
             res.status(400).json({"error": err.message});
             return;
         }
@@ -91,8 +107,8 @@ app.get('/api/drinks', (req, res) => {
 
 // POST /api/drinks - Vytvoření nového nápoje v menu
 app.post('/api/drinks', (req, res) => {
-    const { name, description, icon_name } = req.body;
-    const iconName = icon_name || 'water.png';
+    const { name, description, category } = req.body;
+    const cat = category || 3;
     
     // Validace
     if (!name) {
@@ -101,8 +117,8 @@ app.post('/api/drinks', (req, res) => {
     }
     
     db.run(
-        `INSERT INTO drinks (name, description, icon_name) VALUES (?, ?, ?)`,
-        [name, description || '', iconName],
+        `INSERT INTO drinks (name, description, category) VALUES (?, ?, ?)`,
+        [name, description || '', cat],
         function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE')) {
@@ -116,7 +132,7 @@ app.post('/api/drinks', (req, res) => {
                 "id": this.lastID,
                 "name": name,
                 "description": description || '',
-                "icon_name": iconName,
+                "category": cat,
                 "created_at": new Date().toISOString()
             });
         }
@@ -126,8 +142,8 @@ app.post('/api/drinks', (req, res) => {
 // PATCH /api/drinks/:id - Aktualizace existujícího nápoje
 app.patch('/api/drinks/:id', (req, res) => {
     const id = req.params.id;
-    const { name, description, icon_name } = req.body;
-    const iconName = icon_name || 'water.png';
+    const { name, description, category } = req.body;
+    const cat = category || 3;
 
     if (!name) {
         res.status(400).json({"error": "name je povinný"});
@@ -135,8 +151,8 @@ app.patch('/api/drinks/:id', (req, res) => {
     }
 
     db.run(
-        `UPDATE drinks SET name = ?, description = ?, icon_name = ? WHERE id = ?`,
-        [name, description || '', iconName, id],
+        `UPDATE drinks SET name = ?, description = ?, category = ? WHERE id = ?`,
+        [name, description || '', cat, id],
         function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE')) {
@@ -154,7 +170,7 @@ app.patch('/api/drinks/:id', (req, res) => {
                 "id": Number(id),
                 "name": name,
                 "description": description || '',
-                "icon_name": iconName
+                "category": cat
             });
         }
     );

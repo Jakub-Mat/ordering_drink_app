@@ -59,7 +59,7 @@ export default function KanbanBoard({ orders, drinks, onStatusChange, onDeleteOr
                   {t(columnLabel)}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {ordersInColumn.length} {ordersInColumn.length === 1 ? 'order' : 'orders'}
+                  {ordersInColumn.length} {ordersInColumn.length === 1 ? t('order') : t('orders')}
                 </p>
               </div>
 
