@@ -25,3 +25,4 @@ dist-ssr
 
 # Explicitly include the database file if any ignore pattern matches it
 !databaze.db
+databaze.db
