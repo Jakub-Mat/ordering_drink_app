@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Explicitly include the database file if any ignore pattern matches it
+!databaze.db
