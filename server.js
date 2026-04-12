@@ -29,7 +29,7 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // Migration: wipe data, remove icon_name, add category
+        // Non-destructive migration: keep existing data and only add missing columns
         db.all(`PRAGMA table_info(drinks)`, [], (err, columns) => {
             if (err) {
                 console.error('Chyba při čtení schématu tabulky drinks:', err.message);
@@ -38,29 +38,6 @@ const db = new sqlite3.Database('./databaze.db', (err) => {
             const hasIconName = columns.some(column => column.name === 'icon_name');
             const hasIcon = columns.some(column => column.name === 'icon');
             const hasCategory = columns.some(column => column.name === 'category');
-
-            // Wipe all data
-            db.run("DELETE FROM drinks", (wipeErr) => {
-                if (wipeErr) {
-                    console.error('Chyba při mazání dat z drinks:', wipeErr.message);
-                }
-            });
-
-            // Drop old columns
-            if (hasIconName) {
-                db.run(`ALTER TABLE drinks DROP COLUMN icon_name`, (dropErr) => {
-                    if (dropErr) {
-                        console.error('Chyba při odstraňování sloupce icon_name:', dropErr.message);
-                    }
-                });
-            }
-            if (hasIcon) {
-                db.run(`ALTER TABLE drinks DROP COLUMN icon`, (dropErr) => {
-                    if (dropErr) {
-                        console.error('Chyba při odstraňování sloupce icon:', dropErr.message);
-                    }
-                });
-            }
 
             // Add category if missing
             if (!hasCategory) {
