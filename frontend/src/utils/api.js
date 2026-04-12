@@ -1,4 +1,5 @@
-const API_BASE = 'http://localhost:3001/api';
+const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
+const API_BASE = configuredApiBase || `${window.location.protocol}//${window.location.hostname}:3001/api`;
 
 /**
  * Fetch all drinks from the menu
