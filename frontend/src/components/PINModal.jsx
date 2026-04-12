@@ -19,10 +19,10 @@ export default function PINModal({ onSubmit, onCancel }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">{t('bartenderAccess')}</h2>
-        <p className="text-gray-600 text-center mb-6">{t('enterPinPrompt')}</p>
+    <div className="fixed inset-0 bg-brand-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-brand-ghost rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-brand-black">{t('bartenderAccess')}</h2>
+        <p className="text-brand-slate text-center mb-6">{t('enterPinPrompt')}</p>
         
         <form onSubmit={handleSubmit}>
           <input
@@ -34,21 +34,21 @@ export default function PINModal({ onSubmit, onCancel }) {
               setError('');
             }}
             maxLength="6"
-            className="w-full px-4 py-3 text-2xl text-center tracking-widest border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-500 mb-4 font-mono"
+            className="w-full px-4 py-3 text-2xl text-center tracking-widest border-2 border-brand-slate rounded-lg focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 mb-4 font-mono"
             autoFocus
           />
-          {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+          {error && <p className="text-brand-red text-sm mb-4 text-center">{error}</p>}
           <div className="flex gap-3">
             <button
               type="submit"
-              className="flex-1 bg-red-500 text-white text-lg font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition-colors"
+              className="flex-1 bg-brand-red text-brand-ghost text-lg font-bold py-3 px-6 rounded-lg hover:brightness-110 transition-all"
             >
               {t('enter')}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-gray-300 text-gray-700 text-lg font-bold py-3 px-6 rounded-lg hover:bg-gray-400 transition-colors"
+              className="flex-1 bg-brand-slate text-brand-ghost text-lg font-bold py-3 px-6 rounded-lg hover:bg-brand-blue transition-colors"
             >
               {t('cancel')}
             </button>

@@ -9,6 +9,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        'brand-black': '#0A0908',
+        'brand-slate': '#19647E',
+        'brand-blue': '#51BBFE',
+        'brand-ghost': '#FFFAFF',
+        'brand-red': '#FF4757',
         status: {
           pending: '#fbbf24',    // amber
           preparing: '#3b82f6',  // blue

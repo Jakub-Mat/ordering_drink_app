@@ -19,10 +19,10 @@ export default function CustomerNameModal({ onSubmit }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">{t('startOrdering')}</h2>
-        <p className="text-gray-600 text-center mb-6">{t('enterNamePrompt')}</p>
+    <div className="fixed inset-0 bg-brand-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-brand-ghost rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-brand-black">{t('startOrdering')}</h2>
+        <p className="text-brand-slate text-center mb-6">{t('enterNamePrompt')}</p>
         
         <form onSubmit={handleSubmit}>
           <input
@@ -33,13 +33,13 @@ export default function CustomerNameModal({ onSubmit }) {
               setName(e.target.value);
               setError('');
             }}
-            className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
+            className="w-full px-4 py-3 text-lg border-2 border-brand-slate rounded-lg focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 mb-4"
             autoFocus
           />
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+          {error && <p className="text-brand-red text-sm mb-4">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white text-lg font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors"
+            className="w-full bg-brand-slate text-brand-ghost text-lg font-bold py-3 px-6 rounded-lg hover:bg-brand-blue transition-colors"
           >
             {t('startOrdering')}
           </button>

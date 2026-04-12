@@ -10,7 +10,7 @@ export default function OrdersList({ orders, drinks, onStatusChange, onDeleteOrd
   if (orders.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 text-lg">
+        <p className="text-brand-slate text-lg">
           {isBarman ? t('noOrdersWaiting') : t('noOrdersPlaced')}
         </p>
       </div>

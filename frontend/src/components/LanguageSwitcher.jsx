@@ -5,13 +5,15 @@ const languages = [
   { code: 'en', label: 'English' },
 ];
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ showLabel = true }) {
   const { i18n, t } = useTranslation();
   const currentLanguage = i18n.language?.split('-')[0] ?? 'cs';
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500 dark:text-gray-300">{t('language')}:</span>
+      {showLabel && (
+        <span className="text-sm text-gray-500 dark:text-gray-300">{t('language')}:</span>
+      )}
       <div className="inline-flex rounded-full border border-gray-200 bg-white shadow-sm overflow-hidden">
         {languages.map((language) => (
           <button

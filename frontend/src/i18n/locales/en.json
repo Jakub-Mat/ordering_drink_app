@@ -1,5 +1,5 @@
 {
-  "drinkBar": "☕ Drink Bar",
+  "drinkBar": "Matas family bar😊",
   "welcome": "Welcome, {{name}}!",
   "logout": "Logout",
   "loadingMenu": "Loading menu...",
@@ -83,5 +83,6 @@
   "preparingStatus": "Preparing",
   "readyStatus": "Ready",
   "order": "order",
-  "orders": "orders"
+  "orders": "orders",
+  "selectedDrinks": "Selected drinks"
 }

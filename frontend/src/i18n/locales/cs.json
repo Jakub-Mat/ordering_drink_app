@@ -1,5 +1,5 @@
 {
-  "drinkBar": "☕ Kavárna",
+  "drinkBar": "Bar u Matas family😊",
   "welcome": "Vítejte, {{name}}!",
   "logout": "Odhlásit se",
   "loadingMenu": "Načítání nabídky...",
@@ -83,5 +83,6 @@
   "preparingStatus": "Příprava",
   "readyStatus": "Hotovo",
   "order": "objednávka",
-  "orders": "objednávky"
+  "orders": "objednávky",
+  "selectedDrinks": "Vybrané nápoje"
 }
