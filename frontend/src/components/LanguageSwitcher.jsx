@@ -12,9 +12,9 @@ export default function LanguageSwitcher({ showLabel = true }) {
   return (
     <div className="flex items-center gap-2">
       {showLabel && (
-        <span className="text-sm text-gray-500 dark:text-gray-300">{t('language')}:</span>
+        <span className="text-sm text-brand-slate">{t('language')}:</span>
       )}
-      <div className="inline-flex rounded-full border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="inline-flex rounded-full border border-brand-slate/40 bg-brand-ghost shadow-sm overflow-hidden">
         {languages.map((language) => (
           <button
             key={language.code}
@@ -22,8 +22,8 @@ export default function LanguageSwitcher({ showLabel = true }) {
             disabled={currentLanguage === language.code}
             className={`px-3 py-1 text-xs font-semibold transition-colors ${
               currentLanguage === language.code
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                ? 'bg-brand-blue text-brand-ghost'
+                : 'bg-brand-ghost text-brand-black hover:bg-brand-slate/10'
             }`}
           >
             {language.label}

@@ -17,14 +17,14 @@ export default function OrdersList({ orders, drinks, onStatusChange, onDeleteOrd
     );
   }
 
-  // For bartender: sort by status (pending first, then preparing)
-  // For customer: sort by creation time (newest first)
-  const sortedOrders = isBarman
-    ? [...orders].sort((a, b) => {
-        const statusPriority = { pending: 0, preparing: 1, ready: 2 };
-        return (statusPriority[a.status] || 3) - (statusPriority[b.status] || 3);
-      })
-    : [...orders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  // Sort orders by priority status: READY > PREPARING > PENDING
+  // For same status level, sort by creation time (newest first)
+  const sortedOrders = [...orders].sort((a, b) => {
+    const statusPriority = { ready: 0, preparing: 1, pending: 2 };
+    const priorityDiff = (statusPriority[a.status] || 3) - (statusPriority[b.status] || 3);
+    if (priorityDiff !== 0) return priorityDiff;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
   return (
     <div className="w-full space-y-3">

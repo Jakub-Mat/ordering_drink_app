@@ -1,4 +1,5 @@
 import MenuComponent from './MenuComponent';
+import SectionHeader from './SectionHeader';
 
 /**
  * Drink Menu Page - Displays menu and handles order submission
@@ -16,8 +17,7 @@ export default function DrinkMenuPage({
   return (
     <div className="flex-1">
       {/* Page Header */}
-      <h2 className="text-3xl font-bold mb-2 text-brand-black">{t('drinkMenu')}</h2>
-      <div className="h-1 w-20 bg-brand-blue mb-6 rounded-full"></div>
+      <SectionHeader title={t('drinkMenu')} />
 
       {/* Message Alert */}
       {message && (

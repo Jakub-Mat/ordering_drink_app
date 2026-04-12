@@ -84,5 +84,11 @@
   "readyStatus": "Hotovo",
   "order": "objednávka",
   "orders": "objednávky",
-  "selectedDrinks": "Vybrané nápoje"
+  "selectedDrinks": "Vybrané nápoje",
+  "bartenderTitle": "Barmanský pult",
+  "welcomeBarman": "Vítej, barmane!",
+  "drinksInMenu": "Nápoje v nabídce",
+  "prioritizeCategory": "Upřednostnit kategorii",
+  "allCategories": "Všechny kategorie",
+  "delete": "Smazat"
 }

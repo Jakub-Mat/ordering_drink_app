@@ -6,17 +6,6 @@ import { useTranslation } from 'react-i18next';
 export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder, isBarman = false }) {
   const { t } = useTranslation();
 
-  // Map drink IDs to drink names
-  const getDrinkNames = () => {
-    if (!order.drink_ids || !drinks) return t('unknown');
-    return order.drink_ids
-      .map(id => {
-        const drink = drinks.find(d => d.id === id);
-        return drink?.name || t('unknown');
-      })
-      .join(', ');
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
@@ -40,6 +29,60 @@ export default function OrderCard({ order, drinks, onStatusChange, onDeleteOrder
         return status;
     }
   };
+
+  const drinkLabels = (order.drink_ids || []).map((id) => {
+    const drink = drinks.find((d) => d.id === id);
+    return drink?.name || t('unknown');
+  });
+
+  if (isBarman) {
+    return (
+      <div
+        className={`p-4 rounded-lg border ${getStatusColor(order.status)} shadow-sm ${order.status !== 'ready' ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+        id={`order-${order.id}`}
+        onClick={() => {
+          if (order.status !== 'ready') {
+            onStatusChange(order.id, getNextStatus(order.status));
+          }
+        }}
+      >
+        <p className="text-sm md:text-base text-brand-black">{t('orderNumber', { id: order.id })}</p>
+        <h4 className="text-base md:text-lg font-bold text-brand-black mb-2">{order.customer_name || t('unknownCustomer')}</h4>
+
+        <p className="text-sm md:text-base text-brand-black mb-1">{t('drinks')}:</p>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {drinkLabels.length > 0 ? (
+            drinkLabels.map((label, idx) => (
+              <span
+                key={`${order.id}-${idx}`}
+                className="inline-flex items-center rounded-full bg-brand-blue/20 px-2.5 py-1 text-sm font-medium text-brand-blue"
+              >
+                {label}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm md:text-base text-brand-slate">{t('unknown')}</span>
+          )}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="text-sm md:text-base font-medium text-brand-black">{t(`${order.status}Status`)}</span>
+          {order.status === 'ready' && onDeleteOrder && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteOrder(order.id);
+              }}
+              className="bg-brand-red text-brand-ghost px-3 py-1.5 rounded font-bold text-xs md:text-sm hover:brightness-110 transition-all"
+            >
+              {t('deleteOrder')}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

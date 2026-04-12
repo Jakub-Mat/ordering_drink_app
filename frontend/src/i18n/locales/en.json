@@ -84,5 +84,11 @@
   "readyStatus": "Ready",
   "order": "order",
   "orders": "orders",
-  "selectedDrinks": "Selected drinks"
+  "selectedDrinks": "Selected drinks",
+  "bartenderTitle": "Bartender",
+  "welcomeBarman": "Welcome barman!",
+  "drinksInMenu": "Drinks in menu",
+  "prioritizeCategory": "Prioritize category",
+  "allCategories": "All categories",
+  "delete": "Delete"
 }

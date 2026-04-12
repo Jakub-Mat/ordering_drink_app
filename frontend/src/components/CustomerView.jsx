@@ -127,7 +127,7 @@ export default function CustomerView() {
             {/* Hamburger Menu - Mobile */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`lg:hidden absolute right-4 top-1/2 -translate-y-1/2 text-brand-black p-2 hover:bg-brand-slate/10 rounded-lg transition-colors ${menuOpen ? 'opacity-0 pointer-events-none' : ''}`}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-black p-2 hover:bg-brand-slate/10 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
               <svg
@@ -145,7 +145,7 @@ export default function CustomerView() {
               </svg>
             </button>
 
-            <div className="pr-12 lg:pr-0">
+            <div className="pr-12">
               <h1 className="text-xl md:text-2xl font-bold text-brand-black">
                 {t('drinkBar')}
               </h1>
