@@ -1,10 +1,21 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+const http = require('http');
+const socketIO = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
 const port = 3001; // Backend poběží na portu 3001
 const host = '0.0.0.0'; // Povolit přístup zvenčí (pokud je potřeba pro Docker)
+
+// Inicializace Socket.IO
+const io = socketIO(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PATCH", "DELETE"]
+    }
+});
 
 // Povolíme přijímat data z Reactu (který poběží jinde) a formát JSON
 app.use(cors());
@@ -272,13 +283,20 @@ app.post('/api/orders', (req, res) => {
                                         res.status(400).json({"error": err.message});
                                         return;
                                     }
-                                    res.status(201).json({
+                                    
+                                    const newOrder = {
                                         "id": orderId,
                                         "customer_name": customer_name,
                                         "status": 'pending',
                                         "drink_ids": drink_ids,
                                         "created_at": new Date().toISOString()
-                                    });
+                                    };
+                                    
+                                    // Broadcast novou objednávku všem připojeným klientům
+                                    io.emit('newOrder', newOrder);
+                                    console.log(`[WebSocket] Broadcast: nová objednávka od ${customer_name}`);
+                                    
+                                    res.status(201).json(newOrder);
                                 });
                             }
                         }
@@ -321,10 +339,19 @@ app.patch('/api/orders/:id', (req, res) => {
                 res.status(404).json({"error": "Objednávka nenalezena"});
                 return;
             }
+            
+            const updateData = {
+                "id": Number(id),
+                "status": status
+            };
+            
+            // Broadcast změnu statusu všem připojeným klientům
+            io.emit('orderStatusChanged', updateData);
+            console.log(`[WebSocket] Broadcast: objednávka ${id} změněna na status ${status}`);
+            
             res.json({
                 "message": "Objednávka aktualizována",
-                "id": id,
-                "status": status
+                ...updateData
             });
         }
     );
@@ -363,9 +390,25 @@ app.delete('/api/orders/:id', (req, res) => {
     });
 });
 
+// 4. WebSocket event handlers
+io.on('connection', (socket) => {
+    console.log(`[WebSocket] Nový klient připojen: ${socket.id}`);
+    
+    socket.on('disconnect', () => {
+        console.log(`[WebSocket] Klient odpojen: ${socket.id}`);
+    });
+    
+    // Ping-pong pro ověření spojení
+    socket.on('ping', (callback) => {
+        console.log(`[WebSocket] Ping od ${socket.id}`);
+        callback('pong');
+    });
+});
+
 // Spuštění serveru
-app.listen(port, host, () => {
+server.listen(port, host, () => {
     console.log(`Backend server běží na http://${host}:${port}`);
+    console.log(`WebSocket server běží na ws://${host}:${port}`);
     console.log(`API endpoints:`);
     console.log(`GET /api/drinks - Získat všechny nápoje`);
     console.log(`POST /api/drinks - Vytvořit nový nápoj`);

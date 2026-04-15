@@ -6,6 +6,7 @@ import DrinkMenuPage from './DrinkMenuPage';
 import YourOrdersPage from './YourOrdersPage';
 import { fetchDrinks, createOrder, fetchCustomerOrders } from '../utils/api';
 import { getCustomer, saveCustomer, generateCustomerId, clearCustomer } from '../utils/storage';
+import { onWebSocketEvent, offWebSocketEvent } from '../utils/websocket';
 
 /**
  * Customer View - Default interface for ordering drinks
@@ -59,6 +60,29 @@ export default function CustomerView() {
     setPollInterval(interval);
 
     return () => clearInterval(interval);
+  }, [customer]);
+
+  // WebSocket listener pro aktualizace statusu objednávky
+  useEffect(() => {
+    if (!customer) return;
+
+    const handleOrderStatusChanged = (updateData) => {
+      console.log('[CustomerView] Status objednávky změněn:', updateData);
+      
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === updateData.id
+            ? { ...order, status: updateData.status }
+            : order
+        )
+      );
+    };
+
+    onWebSocketEvent('orderStatusChanged', handleOrderStatusChanged);
+
+    return () => {
+      offWebSocketEvent('orderStatusChanged', handleOrderStatusChanged);
+    };
   }, [customer]);
 
   const handleCustomerNameSubmit = (name) => {

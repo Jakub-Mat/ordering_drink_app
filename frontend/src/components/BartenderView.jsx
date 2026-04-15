@@ -7,6 +7,7 @@ import BartenderWorkflowPage from './BartenderWorkflowPage';
 import BartenderMenuManagementPage from './BartenderMenuManagementPage';
 import { fetchOrders, updateOrderStatus, fetchDrinks, deleteOrder, createDrink, updateDrink, deleteDrink } from '../utils/api';
 import { playNotificationSound, highlightElement } from '../utils/notifications';
+import { onWebSocketEvent, offWebSocketEvent } from '../utils/websocket';
 
 const CORRECT_PIN = '1234'; // Hardcoded PIN for MVP
 
@@ -108,6 +109,52 @@ export default function BartenderView({ onExit }) {
 
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, [authenticated]);
+
+  // WebSocket event listeners
+  useEffect(() => {
+    if (!authenticated) return;
+
+    // Handler pro nové objednávky
+    const handleNewOrder = (newOrder) => {
+      console.log('[BartenderView] Nová objednávka přijata:', newOrder);
+      
+      setOrders(prev => {
+        const exists = prev.some(o => o.id === newOrder.id);
+        if (exists) return prev;
+        return [newOrder, ...prev];
+      });
+      
+      // Notifikace
+      playNotificationSound();
+      setTimeout(() => {
+        const element = document.getElementById(`order-${newOrder.id}`);
+        if (element) highlightElement(element);
+      }, 100);
+    };
+
+    // Handler pro změnu statusu objednávky
+    const handleOrderStatusChanged = (updateData) => {
+      console.log('[BartenderView] Status objednávky změněn:', updateData);
+      
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === updateData.id
+            ? { ...order, status: updateData.status }
+            : order
+        )
+      );
+    };
+
+    // Registrace event listenerů
+    onWebSocketEvent('newOrder', handleNewOrder);
+    onWebSocketEvent('orderStatusChanged', handleOrderStatusChanged);
+
+    // Cleanup
+    return () => {
+      offWebSocketEvent('newOrder', handleNewOrder);
+      offWebSocketEvent('orderStatusChanged', handleOrderStatusChanged);
     };
   }, [authenticated]);
 

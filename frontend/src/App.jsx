@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CustomerView from './components/CustomerView';
 import BartenderView from './components/BartenderView';
+import { initWebSocket, disconnectWebSocket } from './utils/websocket';
 
 /**
  * Main App component
@@ -14,6 +15,17 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const barmanMode = params.get('barman') === 'true';
     setIsBartender(barmanMode);
+  }, []);
+
+  // Inicializace WebSocket při mount
+  useEffect(() => {
+    console.log('[App] Inicializuji WebSocket...');
+    initWebSocket();
+
+    return () => {
+      // Volitelně: odpojit WebSocket při unmount
+      // disconnectWebSocket();
+    };
   }, []);
 
   const handleExitBartender = () => {
